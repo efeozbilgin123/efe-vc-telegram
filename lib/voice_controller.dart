@@ -10,6 +10,8 @@ import 'package:permission_handler/permission_handler.dart';
 import 'proximity.dart';
 
 class PortalVoiceController extends ChangeNotifier {
+  bool _disposed = false;
+  void _emit() { if (!_disposed) notifyListeners(); }
   Room? _room;
   EventsListener<RoomEvent>? _events;
   HttpServer? _bridge;
@@ -46,14 +48,14 @@ class PortalVoiceController extends ChangeNotifier {
   void setRadius(double value) {
     radius = value;
     _applyProximity();
-    notifyListeners();
+    _emit();
   }
 
   void setDemo(bool value) {
     demo = value;
     own = value ? VoicePosition(demoX, 64, 0, 'minecraft:overworld', DateTime.now()) : null;
     _applyProximity();
-    notifyListeners();
+    _emit();
     unawaited(_broadcastPosition());
   }
 
@@ -62,7 +64,7 @@ class PortalVoiceController extends ChangeNotifier {
     if (demo) {
       own = VoicePosition(demoX, 64, 0, 'minecraft:overworld', DateTime.now());
       _applyProximity();
-      notifyListeners();
+      _emit();
       unawaited(_broadcastPosition());
     }
   }
@@ -76,7 +78,7 @@ class PortalVoiceController extends ChangeNotifier {
     if (busy || connected) return;
     busy = true;
     status = 'Connecting…';
-    notifyListeners();
+    _emit();
     try {
       final api = Uri.parse(endpoint.trim());
       final local = api.host == 'localhost' || api.host == '127.0.0.1';
@@ -130,18 +132,18 @@ class PortalVoiceController extends ChangeNotifier {
             if (parsed != null) {
               _remote[e.participant!.identity] = parsed;
               _applyProximity();
-              notifyListeners();
+              _emit();
             }
           } catch (_) { /* Malformed remote position is discarded. */ }
         })
-        ..on<ParticipantConnectedEvent>((_) { _applyProximity(); notifyListeners(); })
+        ..on<ParticipantConnectedEvent>((_) { _applyProximity(); _emit(); })
         ..on<ParticipantDisconnectedEvent>((e) {
           _remote.remove(e.participant.identity);
           _requested.clear();
-          notifyListeners();
+          _emit();
         })
-        ..on<TrackPublishedEvent>((_) { _applyProximity(); notifyListeners(); })
-        ..on<TrackSubscribedEvent>((_) { notifyListeners(); });
+        ..on<TrackPublishedEvent>((_) { _applyProximity(); _emit(); })
+        ..on<TrackSubscribedEvent>((_) { _emit(); });
       await room.connect(url, token);
       await room.localParticipant?.setMicrophoneEnabled(false);
       microphone = false;
@@ -154,16 +156,16 @@ class PortalVoiceController extends ChangeNotifier {
         }
         _applyProximity();
         unawaited(_broadcastPosition());
-        notifyListeners();
+        _emit();
       });
       _applyProximity();
       unawaited(_broadcastPosition());
-      notifyListeners();
+      _emit();
     } catch (e) {
       await disconnect();
       status = 'Failed: ' + e.toString();
       busy = false;
-      notifyListeners();
+      _emit();
       rethrow;
     }
   }
@@ -172,7 +174,7 @@ class PortalVoiceController extends ChangeNotifier {
     if (!connected) return;
     await _room?.localParticipant?.setMicrophoneEnabled(value);
     microphone = value;
-    notifyListeners();
+    _emit();
   }
 
   Future<void> _handleBridgeRequest(HttpRequest req) async {
@@ -205,7 +207,7 @@ class PortalVoiceController extends ChangeNotifier {
       demo = false;
       own = pos;
       _applyProximity();
-      notifyListeners();
+      _emit();
       unawaited(_broadcastPosition());
       reply(200, '{"ok":true}');
     } catch (_) {
@@ -268,11 +270,12 @@ class PortalVoiceController extends ChangeNotifier {
     _remote.clear();
     _requested.clear();
     status = 'Disconnected';
-    notifyListeners();
+    _emit();
   }
 
   @override
   void dispose() {
+    _disposed = true;
     unawaited(disconnect());
     super.dispose();
   }

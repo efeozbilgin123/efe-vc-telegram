@@ -49,7 +49,6 @@ class _VoiceHomeState extends State<VoiceHome> {
 
   @override
   void dispose() {
-    unawaited(voice.disconnect());
     voice.dispose();
     endpoint.dispose();
     room.dispose();
