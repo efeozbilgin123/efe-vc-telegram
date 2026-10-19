@@ -1,0 +1,16 @@
+{
+  "name": "portal-voice-token-server",
+  "private": true,
+  "version": "0.2.0",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "check": "node --check server.mjs"
+  },
+  "dependencies": {
+    "livekit-server-sdk": "^2.13.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
