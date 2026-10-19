@@ -92,3 +92,24 @@ of positions are not anti-cheat-grade verified. A shared room secret is not
 Microsoft/Minecraft authentication. LiveKit encrypts WebRTC transport but
 this version does not implement application-level end-to-end encryption.
 Use TLS, authentication, logging and anti-abuse controls for Internet hosting.
+
+
+## Optional Geyser extension position adapter (experimental)
+
+The geyser-extension folder contains a Java 21 extension. Build it with Gradle:
+
+cd geyser-extension
+gradle build
+
+Place the produced JAR in the Geyser extensions folder and start the local
+ViaProxy/Geyser engine once. A bridge.properties file is created under the
+extension's data folder. Copy the Local Bridge Key from Portal Voice into
+bridgeKey= in that properties file and restart the engine. The extension
+polls the one local connected Bedrock player's position + dimension and sends
+it to 127.0.0.1:43128. It fails closed if there are zero or multiple local
+Bedrock players, or if Geyser changes its session dimension getter.
+
+This extension has not been verified against the bundled Android Geyser
+2.12.0 runtime. It is not automatically installed in Portal 0.1.6.
+The current key is regenerated on each Portal Voice app launch; it must be
+resynchronized until a safe shared configuration interface is implemented.

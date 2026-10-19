@@ -1,0 +1,6 @@
+id: portalvoice
+name: PortalVoice
+main: org.portal.voice.GeyserBridgeExtension
+api: 2.11.0
+version: 0.2.0
+authors: [Portal]
