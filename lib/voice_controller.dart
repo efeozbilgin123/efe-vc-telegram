@@ -89,7 +89,8 @@ class PortalVoiceController extends ChangeNotifier {
         throw const FormatException('Room, player and room password are required.');
       }
       if (Platform.isAndroid) {
-        if (!await Permission.microphone.request().isGranted) {
+        final micPermission = await Permission.microphone.request();
+        if (!micPermission.isGranted) {
           throw StateError('Microphone permission denied.');
         }
         final ready = await FlutterBackground.initialize(
